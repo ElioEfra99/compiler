@@ -3,6 +3,9 @@
 
 #include "framework.h"
 #include "BhWin32.h"
+#include <Richedit.h>
+#include <stdio.h>
+#include <commdlg.h>
 
 #pragma comment(lib, "comctl32.lib")
 
@@ -13,6 +16,11 @@ HINSTANCE hInst;                                // instancia actual
 WCHAR szTitle[MAX_LOADSTRING];                  // Texto de la barra de título
 WCHAR szWindowClass[MAX_LOADSTRING];            // nombre de clase de la ventana principal
 HWND hWndToolbar;
+static HWND hWndEdit;                           // Manejador de ventana
+HFONT hFont;                                    // Manejador de fuente
+CHARFORMAT2 cf;                                 // Formato del texto
+DWORD dwEVM;                                    // Evento de captura
+
 const int NUMBUTTONS = 4;
 
 // Declaraciones de funciones adelantadas incluidas en este módulo de código:
@@ -168,10 +176,38 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - publicar un mensaje de salida y volver
 //
 //
+
+long PopFileLength(FILE* file)
+{
+    int iCurrentPos, iFileLength;
+    iCurrentPos = ftell(file);
+    fseek(file, 0, SEEK_END);
+    iFileLength = ftell(file);
+    fseek(file, iCurrentPos, SEEK_SET);
+    return iFileLength;
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static HWND hStatus;
     switch (message)
     {
+    case WM_NOTIFY:
+        {
+            NMHDR* pHdr = (NMHDR*)lParam;
+            TCHAR szPosCur[MAX_LOADSTRING];
+            if (pHdr->hwndFrom==hWndEdit)
+            {
+                if (pHdr->code==EN_SELCHANGE)
+                {
+                    swprintf(szPosCur, L"Linea; %d", 1 +
+                    (WORD)SendMessage(hWndEdit, EM_LINEFROMCHAR, -1, 0L));
+                    SendDlgItemMessage(hWnd, IDB_STATUS, SB_SETTEXT, 0,
+                    (LPARAM)szPosCur);
+                }
+            }
+        }
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -199,6 +235,121 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
+            case IDM_ABRIR:
+                {
+                TCHAR szFile[MAX_PATH], szCaption[64 + _MAX_FNAME + _MAX_EXT];
+                ZeroMemory(szFile, MAX_PATH);
+                OPENFILENAME ofn;
+                ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                ofn.lStructSize = sizeof(OPENFILENAME);
+                ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST |
+                    OFN_HIDEREADONLY | OFN_CREATEPROMPT;
+
+                ofn.hwndOwner = hWnd;
+                ofn.lpstrFilter = _T("Tipos de formatos soportados(*.txt)\0 * .txt\0Texto(*.txt)\0\0");
+
+                    ofn.lpstrTitle = _T("Abrir archivo de texto");
+                ofn.lpstrFile = szFile;
+                ofn.nMaxFile = MAX_PATH;
+                if (IDOK == GetOpenFileName(&ofn)) {
+                    wsprintf(szCaption, _T("%s - %s"), szTitle, szFile[0] ? szFile :
+
+                        _T("Sin archivo abierto"));
+
+                    SetWindowText(hWnd, szCaption);
+                    FILE* file;
+                    int iLength;
+                    PSTR pstrBuffer;
+                    char cFile[MAX_PATH];
+                    TCHAR* ptchBuffer;
+                    wcstombs(cFile, szFile, MAX_PATH);
+                    if (NULL == (file = fopen(cFile, "rb"))) {
+                        MessageBox(hWnd, L"Error al leer el archivo", L"Error",
+
+                            MB_OK | MB_ICONERROR);
+
+                    }
+                    else {
+                        iLength = PopFileLength(file);
+                        if (NULL == (pstrBuffer = (PSTR)malloc
+                        (sizeof(char) * (iLength + 1))) || NULL == (ptchBuffer = (TCHAR*)malloc
+                        (sizeof(TCHAR) * (iLength + 1)))) {
+                            fclose(file);
+                            MessageBox(hWnd, L"Error al reservar memoria",
+                                L"Error", MB_OK | MB_ICONERROR);
+
+                        }
+                        else {
+
+                        }
+                    }
+                }
+                //El siguiente segmento de código da formato reemplazando texto
+                //normal por texto con formato
+                memset(&cf, 0, sizeof cf); //Se limpia la estructura del formato
+                cf.cbSize = sizeof(CHARFORMAT2); //Se fija el tamaño de la estructura
+                // Se establece la mascara para que sea posible aplicar color al texto
+                cf.dwMask = CFM_COLOR; //| CFM_BACKCOLOR ;
+                cf.crTextColor = RGB(255, 0, 0); //Se establece el color del texto
+                //cf.crBackColor = RGB(0,0,255);
+                //Se establece un rango de texto a seleccionar
+                SendMessage(hWndEdit, EM_SETSEL, (WPARAM)5, (LPARAM)9);
+                //Se aplica el formato al rango seleccionado
+                SendMessage(hWndEdit, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+                //Se reemplaza el rango seleccionado con el nuevo texto y formato
+                SendMessage(hWndEdit, EM_REPLACESEL, FALSE, (LPARAM)L"cara");
+                // SendMessage(hWndEdit, EM_REPLACESEL, FALSE, (LPARAM)L"pour");
+                }
+                break;
+            case IDM_GUARDAR:
+                {
+                TCHAR szFile[MAX_PATH];
+                ZeroMemory(szFile, MAX_PATH);
+                OPENFILENAME ofn;
+                ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                ofn.lStructSize = sizeof(OPENFILENAME);
+                ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST |
+
+                    OFN_OVERWRITEPROMPT;
+
+                ofn.hwndOwner = hWnd;
+                ofn.lpstrFilter = _T("Tipos de formatos soportados(*.txt)\0 * .txt\0Texto(*.txt)\0\0");
+
+                    ofn.lpstrTitle = _T("Guardar archivo de texto");
+                ofn.lpstrFile = szFile;
+                ofn.nMaxFile = MAX_PATH;
+                if (IDOK == GetSaveFileName(&ofn)) {
+                    FILE* file;
+                    int iLength;
+                    PSTR pstrBuffer;
+                    char cFile[MAX_PATH];
+                    TCHAR* ptchBuffer = NULL;
+                    wcstombs(cFile, szFile, MAX_PATH);
+                    if (NULL == (file = fopen(cFile, "wb"))) {
+                        MessageBox(hWnd, L"Error al crear el archivo", L"Error",
+                            MB_OK | MB_ICONERROR);
+                        iLength = GetWindowTextLength(hWndEdit);
+                        if (NULL == (pstrBuffer = (PSTR)malloc(sizeof(char) *
+                        (iLength + 1))) ||
+                            NULL == (ptchBuffer = (TCHAR*)malloc(sizeof(TCHAR) *
+                            (iLength + 1))))
+
+                        {
+                            MessageBox(hWnd, L"Error al reservar memoria",
+                                L"Error", MB_OK | MB_ICONERROR);
+
+                            fclose(file);
+                        }
+                        GetWindowText(hWndEdit, ptchBuffer, iLength + 1);
+                        wcstombs(pstrBuffer, ptchBuffer, iLength + 1);
+                        fwrite(pstrBuffer, 1, iLength + 1, file);
+                        fclose(file);
+                        free(pstrBuffer);
+                        free(ptchBuffer);
+                    }
+                }
+                }
+                break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
@@ -214,6 +365,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
+        break;
+    case WM_CREATE:
+        {
+            LoadLibrary(L"riched20.dll");
+            hWndEdit = CreateWindowEx(WS_EX_CLIENTEDGE, RICHEDIT_CLASS, L"",
+                WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL
+                | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+                0, 0, 0, 0,
+                hWnd, (HMENU)ID_EDITRICH, hInst, NULL);
+            hFont = CreateFont(18, 0, 0, 0, 0, FALSE, FALSE, FALSE,
+                DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
+                L"Arial");
+            hStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, 
+                                     hWnd, (HMENU)IDB_STATUS, hInst, NULL);
+            SendMessage(hWndEdit, WM_SETFONT, (WPARAM)hFont, 0);
+            SetFocus(hWndEdit);
+        }
+        break;
+    case WM_SIZE:
+        {
+            MoveWindow(hWndEdit, 0, 50, LOWORD(lParam), HIWORD(lParam), TRUE);
+            SendDlgItemMessage(hWnd, IDB_STATUS, WM_SIZE, 0, 0);
+        }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

@@ -8,6 +8,8 @@
 #define IDD_BHWIN32_DIALOG	102
 #define IDD_ABOUTBOX			103
 #define IDM_ABOUT				104
+#define IDM_ABRIR				204
+#define IDM_GUARDAR				205
 #define IDM_EXIT				105
 #define IDI_BHWIN32			107
 #define IDI_SMALL				108
@@ -17,9 +19,11 @@
 #define IDC_STATIC				-1
 // Valores predeterminados siguientes para nuevos objetos
 //
-#define ID_BTNINICIO 201
-#define ID_BTNCOMPILAR 202
-#define IDB_TOOLBAR 300
+#define ID_BTNINICIO	201
+#define ID_BTNCOMPILAR	202
+#define IDB_TOOLBAR		300
+#define ID_EDITRICH		200
+#define IDB_STATUS		303
 #endif
 // Valores predeterminados siguientes para nuevos objetos
 //
