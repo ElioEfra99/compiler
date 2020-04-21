@@ -1,2 +1,3 @@
 ﻿  BhWin32.cpp
+C:\Users\eliod\Desktop\development\compiler\BhWin32\BhWin32\BhWin32.cpp(280,51): warning C4129: 'O': secuencia de escape de carácter no reconocida
   BhWin32.vcxproj -> C:\Users\eliod\Desktop\development\compiler\BhWin32\Debug\BhWin32.exe

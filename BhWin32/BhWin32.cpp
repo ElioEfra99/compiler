@@ -221,10 +221,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					MB_ICONWARNING |  MB_DEFBUTTON2);
 				break;
 			case ID_BTNCOMPILAR:
-				MessageBox(NULL,
-					(LPCWSTR)L"Boton compilar presionado",
-					(LPCWSTR)L"",
-					MB_ICONWARNING | MB_DEFBUTTON2);
+                char nombre[255];
+                char path[255];
+                strcpy(nombre, "./CompiladorDoggo.exe");
+                strcpy(path, "./");
+				// Compilar
 				break;
             case IDM_ABOUT:
 				MessageBox(NULL,
@@ -246,41 +247,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     OFN_HIDEREADONLY | OFN_CREATEPROMPT;
 
                 ofn.hwndOwner = hWnd;
-                ofn.lpstrFilter = _T("Tipos de formatos soportados(*.txt)\0 * .txt\0Texto(*.txt)\0\0");
+                ofn.lpstrFilter = _T("Tipos de formatos soportados(*.doggo)\0 * .doggo\0Texto(*.doggo)\0\0");
 
-                    ofn.lpstrTitle = _T("Abrir archivo de texto");
+                ofn.lpstrTitle = _T("Abrir archivo de texto");
                 ofn.lpstrFile = szFile;
                 ofn.nMaxFile = MAX_PATH;
                 if (IDOK == GetOpenFileName(&ofn)) {
                     wsprintf(szCaption, _T("%s - %s"), szTitle, szFile[0] ? szFile :
-
                         _T("Sin archivo abierto"));
-
                     SetWindowText(hWnd, szCaption);
-                    FILE* file;
+                    FILE *file;
                     int iLength;
                     PSTR pstrBuffer;
                     char cFile[MAX_PATH];
-                    TCHAR* ptchBuffer;
+                    TCHAR *ptchBuffer;
                     wcstombs(cFile, szFile, MAX_PATH);
                     if (NULL == (file = fopen(cFile, "rb"))) {
                         MessageBox(hWnd, L"Error al leer el archivo", L"Error",
-
                             MB_OK | MB_ICONERROR);
-
-                    }
-                    else {
+                    }else {
                         iLength = PopFileLength(file);
                         if (NULL == (pstrBuffer = (PSTR)malloc
-                        (sizeof(char) * (iLength + 1))) || NULL == (ptchBuffer = (TCHAR*)malloc
-                        (sizeof(TCHAR) * (iLength + 1)))) {
+                                    (sizeof(char) * (iLength + 1))) || 
+                            NULL == (ptchBuffer = (TCHAR*)malloc
+                                    (sizeof(TCHAR) * (iLength + 1)))) {
+                                fclose(file);
+                                MessageBox(hWnd, L"Error al reservar memoria",
+                                                L"Error", MB_OK | MB_ICONERROR);
+                        } else {
+                            fread(pstrBuffer, 1, iLength, file);
                             fclose(file);
-                            MessageBox(hWnd, L"Error al reservar memoria",
-                                L"Error", MB_OK | MB_ICONERROR);
-
-                        }
-                        else {
-
+                            pstrBuffer[iLength] = '\O';
+                            mbstowcs(ptchBuffer, pstrBuffer, iLength + 1);
+                            SetWindowText(hWndEdit, ptchBuffer);
+                            free(pstrBuffer);
+                            free(ptchBuffer);
                         }
                     }
                 }
@@ -291,14 +292,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // Se establece la mascara para que sea posible aplicar color al texto
                 cf.dwMask = CFM_COLOR; //| CFM_BACKCOLOR ;
                 cf.crTextColor = RGB(255, 0, 0); //Se establece el color del texto
-                //cf.crBackColor = RGB(0,0,255);
-                //Se establece un rango de texto a seleccionar
+                // Se establece un rango de texto a seleccionar
                 SendMessage(hWndEdit, EM_SETSEL, (WPARAM)5, (LPARAM)9);
-                //Se aplica el formato al rango seleccionado
+                // Se aplica el formato al rango seleccionado
                 SendMessage(hWndEdit, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-                //Se reemplaza el rango seleccionado con el nuevo texto y formato
+                // Se reemplaza el rango seleccionado con el nuevo texto y formato
                 SendMessage(hWndEdit, EM_REPLACESEL, FALSE, (LPARAM)L"cara");
-                // SendMessage(hWndEdit, EM_REPLACESEL, FALSE, (LPARAM)L"pour");
                 }
                 break;
             case IDM_GUARDAR:
@@ -313,27 +312,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     OFN_OVERWRITEPROMPT;
 
                 ofn.hwndOwner = hWnd;
-                ofn.lpstrFilter = _T("Tipos de formatos soportados(*.txt)\0 * .txt\0Texto(*.txt)\0\0");
+                ofn.lpstrFilter = _T("Tipos de formatos soportados(*.doggo)\0 * .doggo\0Texto(*.doggo)\0\0");
 
-                    ofn.lpstrTitle = _T("Guardar archivo de texto");
+                ofn.lpstrTitle = _T("Guardar archivo de texto");
                 ofn.lpstrFile = szFile;
                 ofn.nMaxFile = MAX_PATH;
                 if (IDOK == GetSaveFileName(&ofn)) {
-                    FILE* file;
+                    FILE *file;
                     int iLength;
                     PSTR pstrBuffer;
                     char cFile[MAX_PATH];
-                    TCHAR* ptchBuffer = NULL;
+                    TCHAR *ptchBuffer = NULL;
                     wcstombs(cFile, szFile, MAX_PATH);
                     if (NULL == (file = fopen(cFile, "wb"))) {
                         MessageBox(hWnd, L"Error al crear el archivo", L"Error",
                             MB_OK | MB_ICONERROR);
+                    }else {
                         iLength = GetWindowTextLength(hWndEdit);
                         if (NULL == (pstrBuffer = (PSTR)malloc(sizeof(char) *
                         (iLength + 1))) ||
                             NULL == (ptchBuffer = (TCHAR*)malloc(sizeof(TCHAR) *
                             (iLength + 1))))
-
                         {
                             MessageBox(hWnd, L"Error al reservar memoria",
                                 L"Error", MB_OK | MB_ICONERROR);
