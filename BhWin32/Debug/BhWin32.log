@@ -1,3 +1,4 @@
 ﻿  BhWin32.cpp
-C:\Users\eliod\Desktop\development\compiler\BhWin32\BhWin32\BhWin32.cpp(252,47): warning C4129: 'O': secuencia de escape de carácter no reconocida
+C:\Users\eliod\Desktop\development\compiler\BhWin32\BhWin32\BhWin32.cpp(256,47): warning C4129: 'O': secuencia de escape de carácter no reconocida
+C:\Users\eliod\Desktop\development\compiler\BhWin32\BhWin32\BhWin32.cpp(196,11): warning C4101: 'dwEVM': variable local sin referencia
   BhWin32.vcxproj -> C:\Users\eliod\Desktop\development\compiler\BhWin32\Debug\BhWin32.exe

@@ -1,0 +1,15 @@
+variables
+	ent val1,val2,op,res.
+start
+	printx-"Hola Mundo!!"-;
+	printx-"1. Sumar  2. Restar  3. Multiplicar  4.Dividir"-;
+	lie op;
+	lire val1;
+	lire val2;
+	si op = 1 entons res -=> val1 + val2; sino salto; finif;
+	si op = 2 entons res -=> val1 - val2; sino salto; finif;
+	si op = 3 entons res -=> val1 * val2; sino salto; finif;
+	si op = 4 entons res -=> val1 / val2; sino salto; finif;
+	imprimo res;
+	lire op;
+gameover 

@@ -190,7 +190,11 @@ long PopFileLength(FILE* file)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static HWND hStatus;            
+    static HWND hWndEdit;
+    static HWND hStatus;     
+    CHARFORMAT cf;
+    DWORD dwEVM;
+    HFONT hFont;
     char cFile[MAX_PATH];
     switch (message)
     {
@@ -365,8 +369,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             strcpy(compilerPath, "CompiladorDoggo.exe ");
             strcpy(filePath, cFile);
             strcat(compilerPath, filePath);
-            system(compilerPath);
-            // system("CompiladorDoggo.exe C:\\Users\\eliod\\Desktop\\definitivecode.doggo");
+            system(compilerPath); 
+            // system("CompiladorDoggo.exe C:\\Users\\eliod\\Desktop\\codigocrack.doggo");
         }
         break;
         case ID_BTNINICIO:
